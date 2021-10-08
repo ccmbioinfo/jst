@@ -1,0 +1,66 @@
+version: "3.5"
+services:
+    rabbitmq:
+        container_name: rabbitmq
+        build: ./rabbitmq
+        environment:
+          - RABBITMQ_USER=rabbitmq
+        secrets:
+          - RABBITMQ_PASSWORD
+        ports:
+          - 15672:15672
+          - 5672:5672
+
+    submitter:
+        container_name: submitter
+        build: submitter
+        environment:
+          - ENVIRONMENT=development
+          - RABBITMQ_HOST=rabbitmq
+          - RABBITMQ_PORT=5672
+          - RABBITMQ_USER=rabbitmq
+          - RECEIVER_QUEUE_NAME=work
+          - FORWARDER_QUEUE_NAME=jobs
+          - CORE_SECRET_KEY=some_secret_key
+        secrets:
+          - RABBITMQ_PASSWORD
+        volumes:
+          - "./keys:/keys"
+        depends_on:
+          - rabbitmq
+
+    test:
+      container_name: test
+      build: test
+      environment:
+        - ENVIRONMENT=development
+        - RABBITMQ_HOST=rabbitmq
+        - RABBITMQ_PORT=5672
+        - RABBITMQ_USER=rabbitmq
+        - FORWARDER_QUEUE_NAME=work
+        - CORE_SECRET_KEY=some_secret_key
+      secrets:
+        - RABBITMQ_PASSWORD
+      depends_on:
+        - rabbitmq
+
+    tracker:
+      container_name: tracker
+      build: tracker
+      environment:
+        - ENVIRONMENT=development
+        - RABBITMQ_HOST=rabbitmq
+        - RABBITMQ_PORT=5672
+        - RABBITMQ_USER=rabbitmq
+        - RECEIVER_QUEUE_NAME=jobs
+        - CORE_SECRET_KEY=some_secret_key
+      secrets:
+        - RABBITMQ_PASSWORD
+      volumes:
+        - "./keys:/keys"
+      depends_on:
+        - rabbitmq
+
+secrets:
+  RABBITMQ_PASSWORD:
+    file: ./secrets/RABBITMQ_PASSWORD
