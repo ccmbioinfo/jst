@@ -2,7 +2,7 @@ FROM python:3.6
 COPY requirements.txt .
 RUN pip -q install -r requirements.txt
 
-WORKDIR /user/local/bin
+WORKDIR /user/local/bin/test
 COPY . ./
 
 # Set correct timezone in container

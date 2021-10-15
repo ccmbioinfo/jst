@@ -34,6 +34,7 @@ def poll_jobs():
 
         for scheduler in curr_jobs[system]:
             for job in curr_jobs[system][scheduler][:]:
+                # TODO: If job is just not found, we should log it and remove script
                 status, exit_code = schedulers.check_job_status(ssh, scheduler, job['job_id'])
                 if status != job['status']:
                     curr_jobs[system][scheduler]['status'] = status
